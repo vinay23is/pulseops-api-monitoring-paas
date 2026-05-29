@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: pulseops-backend
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:pulseops}
+    username: ${DB_USER:pulseops}
+    password: ${DB_PASSWORD:pulseops}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+pulseops:
+  jwt:
+    secret: ${JWT_SECRET:pulseops-super-secret-key-minimum-256-bits-long-for-hs256-algorithm}
+    expiration: 86400000   # 24 hours in ms
+
+  monitor:
+    stream-name: monitor-checks
+    consumer-group: workers
+    consumer-name: worker-1
+
+  rate-limit:
+    requests-per-minute: 60
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+logging:
+  level:
+    dev.pulseops: DEBUG
+    org.springframework.security: WARN

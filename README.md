@@ -162,6 +162,63 @@ Set `BACKEND_URL`, `FRONTEND_URL`, or `BASE_URL` to target non-local environment
 
 ---
 
+## Free Hosted Deployment
+
+Recommended hobby setup:
+
+- Frontend: Vercel Hobby, root directory `frontend`
+- Backend: Render free web service from `render.yaml`
+- Postgres: Supabase free project
+- Redis: Upstash free Redis database
+
+### Render backend
+
+Use the Blueprint flow in Render and select this repository. The `render.yaml` file deploys `pulseops-backend` from `backend/Dockerfile`.
+
+Fill these Render environment variables from Supabase and Upstash:
+
+| Key | Source |
+|-----|--------|
+| `DB_HOST` | Supabase database host |
+| `DB_PORT` | `5432` |
+| `DB_NAME` | Supabase database name |
+| `DB_USER` | Supabase database user |
+| `DB_PASSWORD` | Supabase database password |
+| `REDIS_HOST` | Upstash Redis host |
+| `REDIS_PORT` | Upstash Redis port |
+| `REDIS_USERNAME` | `default` |
+| `REDIS_PASSWORD` | Upstash Redis password |
+| `REDIS_SSL` | `true` |
+| `JWT_SECRET` | A long random secret |
+
+After deploy, verify:
+
+```bash
+curl https://your-render-backend.onrender.com/actuator/health
+```
+
+### Vercel frontend
+
+In Vercel, set:
+
+```text
+Framework Preset: Vite
+Root Directory: frontend
+Build Command: npm run build
+Output Directory: dist
+Install Command: npm ci
+```
+
+Add this Vercel environment variable after the Render backend is live:
+
+```text
+VITE_API_BASE_URL=https://your-render-backend.onrender.com/api/v1
+```
+
+Redeploy the Vercel project after adding the environment variable.
+
+---
+
 ## Kubernetes Deployment
 
 The Helm chart in `charts/pulseops` deploys the full platform:

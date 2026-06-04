@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { Zap, CheckCircle, AlertTriangle, Clock } from 'lucide-react'
 import axios from 'axios'
 import { formatDistanceToNow } from 'date-fns'
+import { API_BASE_URL } from '../api/client'
 
 export default function StatusPage() {
   const { slug } = useParams()
@@ -11,7 +12,7 @@ export default function StatusPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    axios.get(`/api/v1/status/${slug}`)
+    axios.get(`${API_BASE_URL}/status/${slug}`)
       .then(r => setData(r.data))
       .catch(() => setError('Status page not found'))
       .finally(() => setLoading(false))

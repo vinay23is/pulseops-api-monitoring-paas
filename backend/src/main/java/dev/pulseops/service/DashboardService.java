@@ -1,6 +1,7 @@
 package dev.pulseops.service;
 
 import dev.pulseops.dto.dashboard.DashboardResponse;
+import dev.pulseops.dto.dashboard.CheckResultSummary;
 import dev.pulseops.dto.monitor.MonitorResponse;
 import dev.pulseops.entity.User;
 import dev.pulseops.repository.IncidentRepository;
@@ -49,7 +50,7 @@ public class DashboardService {
         }
         if (!projectIds.isEmpty()) avgLatency /= projectIds.size();
 
-        var recentChecks = projectIds.isEmpty() ? List.of() :
+        List<CheckResultSummary> recentChecks = projectIds.isEmpty() ? List.of() :
                 checkResultService.getLatestByProject(projectIds.get(0), 20);
 
         var recentIncidents = incidentService.getByUser(user.getId()).stream().limit(5).toList();

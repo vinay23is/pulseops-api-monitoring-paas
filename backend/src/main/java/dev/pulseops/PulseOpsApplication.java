@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 public class PulseOpsApplication {
     public static void main(String[] args) {
         configureRenderDatabaseUrl();
+        configureRenderRedisUrl();
         SpringApplication.run(PulseOpsApplication.class, args);
     }
 
@@ -42,5 +43,17 @@ public class PulseOpsApplication {
 
     private static String decode(String value) {
         return URLDecoder.decode(value, StandardCharsets.UTF_8);
+    }
+
+    private static void configureRenderRedisUrl() {
+        String redisUrl = System.getenv("REDIS_URL");
+        if (redisUrl == null || redisUrl.isBlank() || !redisUrl.startsWith("rediss://")) {
+            return;
+        }
+
+        URI uri = URI.create(redisUrl);
+        if (uri.getHost() != null && uri.getHost().startsWith("red-") && !uri.getHost().contains(".")) {
+            System.setProperty("spring.data.redis.url", redisUrl.replaceFirst("^rediss://", "redis://"));
+        }
     }
 }

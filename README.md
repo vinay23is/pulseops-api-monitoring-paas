@@ -168,28 +168,12 @@ Recommended hobby setup:
 
 - Frontend: Vercel Hobby, root directory `frontend`
 - Backend: Render free web service from `render.yaml`
-- Postgres: Supabase free project
-- Redis: Upstash free Redis database
+- Postgres: Render free Postgres from `render.yaml`
+- Redis: Render free Key Value from `render.yaml`
 
 ### Render backend
 
-Use the Blueprint flow in Render and select this repository. The `render.yaml` file deploys `pulseops-backend` from `backend/Dockerfile`.
-
-Fill these Render environment variables from Supabase and Upstash:
-
-| Key | Source |
-|-----|--------|
-| `DB_HOST` | Supabase database host |
-| `DB_PORT` | `5432` |
-| `DB_NAME` | Supabase database name |
-| `DB_USER` | Supabase database user |
-| `DB_PASSWORD` | Supabase database password |
-| `REDIS_HOST` | Upstash Redis host |
-| `REDIS_PORT` | Upstash Redis port |
-| `REDIS_USERNAME` | `default` |
-| `REDIS_PASSWORD` | Upstash Redis password |
-| `REDIS_SSL` | `true` |
-| `JWT_SECRET` | A long random secret |
+Use the Blueprint flow in Render and select this repository. The `render.yaml` file deploys `pulseops-backend`, creates a free Render Postgres database, creates a free Render Key Value instance, and wires `DATABASE_URL`, `REDIS_URL`, and `JWT_SECRET` automatically.
 
 After deploy, verify:
 

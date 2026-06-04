@@ -9,25 +9,29 @@ services:
     healthCheckPath: /actuator/health
     autoDeploy: true
     envVars:
-      - key: DB_HOST
-        sync: false
-      - key: DB_PORT
-        value: "5432"
-      - key: DB_NAME
-        sync: false
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: REDIS_HOST
-        sync: false
-      - key: REDIS_PORT
-        value: "6379"
-      - key: REDIS_USERNAME
-        value: default
-      - key: REDIS_PASSWORD
-        sync: false
-      - key: REDIS_SSL
-        value: "true"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pulseops-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: pulseops-redis
+          property: connectionString
       - key: JWT_SECRET
-        sync: false
+        generateValue: true
+
+  - type: keyvalue
+    name: pulseops-redis
+    plan: free
+    region: oregon
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+databases:
+  - name: pulseops-postgres
+    plan: free
+    region: oregon
+    databaseName: pulseops
+    user: pulseops
+    ipAllowList: []

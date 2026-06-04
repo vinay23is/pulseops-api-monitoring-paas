@@ -4,7 +4,7 @@ Use these on your resume under a "Projects" section:
 
 ---
 
-**PulseOps — API Monitoring & Incident Alerting PaaS** | Java 21 · Spring Boot 3 · React · PostgreSQL · Redis · Docker
+**PulseOps — API Monitoring & Incident Alerting PaaS** | Java 21 · Spring Boot 3 · React · PostgreSQL · Redis · Docker · Kubernetes · Helm
 
 - Architected a full-stack PaaS with multi-tenant project/monitor management, JWT-secured REST APIs (10+ endpoints with Swagger/OpenAPI docs), and a BCrypt-hashed auth system using Spring Security 6 and a custom JWT filter chain.
 
@@ -14,4 +14,6 @@ Use these on your resume under a "Projects" section:
 
 - Designed a project API key system with BCrypt-hashed keys, prefix-based lookups, and Redis-backed sliding-window rate limiting (60 req/min per key) for custom event ingestion via a public `POST /api/v1/events` endpoint.
 
-- Delivered a React + Vite + Tailwind dashboard with real-time uptime charts (Recharts), monitor status tables, incident timelines, and a public `/status/{slug}` page — fully containerized with Docker Compose (Postgres 16, Redis 7, Spring Boot, Nginx) for zero-config local deployment.
+- Instrumented production observability with Spring Boot Actuator, Micrometer, Prometheus, and Grafana — exposing health/readiness probes, custom monitor-check counters, latency histograms, queue dispatch gauges, and provisioned dashboards.
+
+- Shipped cloud-native deployment assets with Docker Compose, a Helm chart for Kubernetes (Deployments, StatefulSets, Services, ConfigMaps, Secrets, probes, and resource limits), Terraform deployment skeleton, GitHub Actions CI, Docker image build checks, and smoke/load test scripts.

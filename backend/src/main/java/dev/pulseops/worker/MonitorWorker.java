@@ -5,10 +5,12 @@ import dev.pulseops.service.AlertService;
 import dev.pulseops.service.CheckResultService;
 import dev.pulseops.service.IncidentService;
 import dev.pulseops.service.MonitorService;
+import dev.pulseops.service.MonitoringMetricsService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
@@ -22,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Component
+@ConditionalOnProperty(name = "pulseops.monitor.worker-enabled", havingValue = "true", matchIfMissing = true)
 @RequiredArgsConstructor
 @Slf4j
 public class MonitorWorker {
@@ -32,6 +35,7 @@ public class MonitorWorker {
     private final IncidentService incidentService;
     private final AlertService alertService;
     private final WebClient.Builder webClientBuilder;
+    private final MonitoringMetricsService metricsService;
 
     @Value("${pulseops.monitor.stream-name:monitor-checks}")
     private String streamName;
@@ -120,6 +124,7 @@ public class MonitorWorker {
         }
 
         long latencyMs = System.currentTimeMillis() - start;
+        metricsService.recordCheck(success, latencyMs);
 
         checkResultService.save(monitor, statusCode, latencyMs, success, errorMessage);
         monitorService.updateLastCheckedAt(monitorId);

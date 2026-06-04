@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pulseops.fullname" . }}-config
+  labels:
+    {{- include "pulseops.labels" . | nindent 4 }}
+data:
+  DB_HOST: {{ include "pulseops.fullname" . }}-postgres
+  DB_PORT: "5432"
+  DB_NAME: {{ .Values.postgres.database | quote }}
+  DB_USER: {{ .Values.postgres.username | quote }}
+  REDIS_HOST: {{ include "pulseops.fullname" . }}-redis
+  REDIS_PORT: "6379"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pulseops.fullname" . }}-frontend-nginx
+  labels:
+    {{- include "pulseops.labels" . | nindent 4 }}
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        location /api/ {
+            proxy_pass http://{{ include "pulseops.fullname" . }}-backend:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        }
+
+        gzip on;
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml;
+    }

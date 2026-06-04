@@ -1,0 +1,65 @@
+global:
+  imagePullPolicy: IfNotPresent
+
+backend:
+  replicaCount: 1
+  image:
+    repository: pulseops-backend
+    tag: latest
+  service:
+    port: 8080
+  jwtSecret: pulseops-super-secret-key-minimum-256-bits-long-for-hs256-algorithm
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+frontend:
+  replicaCount: 1
+  image:
+    repository: pulseops-frontend
+    tag: latest
+  service:
+    port: 80
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+postgres:
+  image: postgres:16-alpine
+  database: pulseops
+  username: pulseops
+  password: pulseops
+  storage:
+    size: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+redis:
+  image: redis:7-alpine
+  storage:
+    size: 512Mi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+ingress:
+  enabled: false
+  className: nginx
+  host: pulseops.local

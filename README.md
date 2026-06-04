@@ -32,6 +32,11 @@ A production-style, free, local-first API monitoring platform similar to a mini 
 │  │  PostgreSQL  │    │    Redis 7   │                        │
 │  │   Port 5432  │    │  Port 6379   │                        │
 │  └──────────────┘    └──────────────┘                        │
+│                                                                │
+│  ┌──────────────┐    ┌──────────────┐                        │
+│  │  Prometheus  │───▶│   Grafana    │                        │
+│  │   Port 9090  │    │  Port 3000   │                        │
+│  └──────────────┘    └──────────────┘                        │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -47,10 +52,12 @@ A production-style, free, local-first API monitoring platform similar to a mini 
 | Queue/Cache | Redis 7, Redis Streams               |
 | HTTP Client | Spring WebFlux (WebClient)           |
 | API Docs    | SpringDoc OpenAPI / Swagger UI       |
+| Observability | Spring Boot Actuator, Micrometer, Prometheus, Grafana |
 | Frontend    | React 18, Vite 5, Tailwind CSS 3    |
 | Charts      | Recharts                             |
-| Container   | Docker, Docker Compose               |
+| Container   | Docker, Docker Compose, Kubernetes, Helm |
 | Web Server  | Nginx (SPA proxy)                    |
+| IaC         | Terraform skeleton for Helm releases |
 
 ---
 
@@ -64,6 +71,11 @@ A production-style, free, local-first API monitoring platform similar to a mini 
 - **Alert system** — IN_APP, MOCK_EMAIL, WEBHOOK alerts with delivery tracking and webhook failure logging
 - **API Key system** — project-scoped keys, BCrypt-hashed, prefix-based lookup, revoke endpoint
 - **Rate limiting** — Redis sliding-window rate limiter (60 req/min per API key)
+- **Production observability** — Actuator health probes, Prometheus metrics, Grafana datasource provisioning, custom monitor check counters/latency histograms
+- **CI pipeline** — GitHub Actions runs backend tests, frontend production builds, and Docker image build checks on pull requests and pushes to `main`
+- **Infrastructure validation** — CI lints/renders Helm and runs Terraform formatting/validation checks
+- **Kubernetes deployment** — Helm chart with Deployments/StatefulSets, Services, ConfigMaps, Secrets, probes, resource requests/limits, and optional Ingress
+- **Operational testing** — Compose smoke test script and k6 load smoke script for health/metrics endpoints
 - **Dashboard APIs** — uptime %, avg latency, open incidents, recent checks, recent alerts
 - **Public status page** — `/status/{slug}` — no auth required
 - **Seed data** — demo user and project auto-seeded on first run
@@ -91,6 +103,10 @@ docker compose up --build
 | Frontend     | http://localhost:5173                      |
 | Backend API  | http://localhost:8080                      |
 | Swagger UI   | http://localhost:8080/swagger-ui.html      |
+| Health Probe  | http://localhost:8080/actuator/health     |
+| Prometheus Metrics | http://localhost:8080/actuator/prometheus |
+| Prometheus   | http://localhost:9090                      |
+| Grafana      | http://localhost:3000 (admin/admin)        |
 | PostgreSQL   | localhost:5432 (pulseops/pulseops)         |
 | Redis        | localhost:6379                             |
 
@@ -107,7 +123,7 @@ Password: demo123
 ```bash
 cd backend
 # Ensure Postgres & Redis are running locally, then:
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
 **Frontend:**
@@ -116,6 +132,70 @@ cd frontend
 npm install
 npm run dev
 ```
+
+### CI checks
+
+```bash
+cd backend && mvn test
+cd frontend && npm ci && npm run build
+docker build -t pulseops-backend:local ./backend
+docker build -t pulseops-frontend:local ./frontend
+```
+
+> If Maven is not installed locally, run the backend test from CI or use a Maven container once Docker Desktop is running.
+
+### Smoke and load checks
+
+After `docker compose up --build` reports healthy services:
+
+```bash
+./scripts/smoke-compose.sh
+```
+
+Optional k6 smoke load:
+
+```bash
+k6 run tests/load/pulseops-smoke.js
+```
+
+Set `BACKEND_URL`, `FRONTEND_URL`, or `BASE_URL` to target non-local environments.
+
+---
+
+## Kubernetes Deployment
+
+The Helm chart in `charts/pulseops` deploys the full platform:
+
+- frontend Deployment + Service with Nginx API proxy config
+- backend Deployment + Service with Actuator readiness/liveness probes
+- PostgreSQL StatefulSet + Service
+- Redis StatefulSet + Service
+- ConfigMap and Secret templates
+- optional Ingress
+- CPU/memory requests and limits
+
+Build local images first:
+
+```bash
+docker build -t pulseops-backend:latest ./backend
+docker build -t pulseops-frontend:latest ./frontend
+```
+
+Install with Helm:
+
+```bash
+helm upgrade --install pulseops ./charts/pulseops \
+  --namespace pulseops \
+  --create-namespace
+```
+
+Port-forward the frontend:
+
+```bash
+kubectl -n pulseops port-forward svc/pulseops-pulseops-frontend 5173:80
+```
+
+For Terraform-driven installs, see `infra/terraform`.
 
 ---
 
@@ -208,6 +288,12 @@ pulseops-api-monitoring-paas/
 │       ├── components/      # Reusable UI (StatCard, Modal, badges)
 │       ├── contexts/        # AuthContext
 │       └── pages/           # Landing, Login, Dashboard, etc.
+├── charts/pulseops/         # Helm chart for Kubernetes deployment
+├── infra/terraform/         # Terraform skeleton for Helm-based installs
+├── ops/                     # Prometheus and Grafana provisioning
+├── scripts/                 # Local operational scripts
+├── tests/load/              # k6 smoke/load checks
+├── .github/workflows/       # CI pipeline
 ├── docker-compose.yml
 ├── README.md
 └── RESUME_BULLETS.md
@@ -230,9 +316,11 @@ See [RESUME_BULLETS.md](./RESUME_BULLETS.md) for 5 strong resume-ready bullet po
 - [ ] Webhook alert configuration UI
 - [ ] Monitor response body assertions
 - [ ] SLA reports (weekly/monthly PDF export)
-- [ ] Grafana dashboard integration
-- [ ] Kubernetes Helm chart deployment
-- [ ] GitHub Actions CI/CD pipeline
+- [x] Prometheus/Grafana observability baseline
+- [x] Kubernetes Helm chart deployment
+- [x] GitHub Actions CI pipeline with Docker image builds
+- [x] Smoke/load testing baseline
+- [x] Terraform deployment skeleton
 
 ---
 

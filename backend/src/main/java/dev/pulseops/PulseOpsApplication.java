@@ -24,7 +24,8 @@ public class PulseOpsApplication {
 
         URI uri = URI.create(databaseUrl);
         String[] userInfo = uri.getUserInfo() == null ? new String[0] : uri.getUserInfo().split(":", 2);
-        String jdbcUrl = "jdbc:postgresql://" + uri.getHost() + ":" + uri.getPort() + uri.getPath();
+        int port = uri.getPort() == -1 ? 5432 : uri.getPort();
+        String jdbcUrl = "jdbc:postgresql://" + uri.getHost() + ":" + port + uri.getPath();
 
         if (uri.getQuery() != null && !uri.getQuery().isBlank()) {
             jdbcUrl += "?" + uri.getQuery();

@@ -11,7 +11,7 @@ const features = [
 ]
 
 const benefits = [
-  '100% free, runs locally via Docker Compose',
+  'Live frontend connected to a deployed Render backend',
   'JWT-secured multi-tenant architecture',
   'Redis Streams queue for async health checks',
   'Spring Boot 3 + Java 21 Virtual Threads',
@@ -45,8 +45,8 @@ export default function Landing() {
           API Monitoring &<br />Incident Alerting
         </h1>
         <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Monitor your APIs, track uptime, manage incidents, and get alerts — all running
-          locally for free. A production-grade PaaS stack in one Docker Compose command.
+          Monitor your APIs, track uptime, manage incidents, and get alerts from a
+          deployed full-stack platform backed by Spring Boot, PostgreSQL, and Redis.
         </p>
         <div className="flex items-center justify-center gap-4 flex-wrap">
           <Link to="/register" className="btn-primary flex items-center gap-2 text-base px-6 py-3">
@@ -73,11 +73,13 @@ export default function Landing() {
 $ cd pulseops-api-monitoring-paas
 $ docker compose up --build
 
+✓ Production backend live on Render
+✓ Frontend connected via VITE_API_BASE_URL
 ✓ PostgreSQL ready on :5432
 ✓ Redis ready on :6379
 ✓ Backend ready on :8080
 ✓ Frontend ready on :5173
-✓ Swagger UI at localhost:8080/swagger-ui.html`}
+✓ Swagger UI available at /swagger-ui.html`}
           </pre>
         </div>
       </section>

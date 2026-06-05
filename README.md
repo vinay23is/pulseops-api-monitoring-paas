@@ -1,6 +1,31 @@
 # PulseOps — API Monitoring & Incident Alerting PaaS
 
-A production-style, free, local-first API monitoring platform similar to a mini Better Stack / UptimeRobot / Datadog uptime monitor. Built with Java 21, Spring Boot 3, React, PostgreSQL, and Redis.
+[![CI](https://github.com/vinay23is/pulseops-api-monitoring-paas/actions/workflows/ci.yml/badge.svg)](https://github.com/vinay23is/pulseops-api-monitoring-paas/actions/workflows/ci.yml)
+
+A production-style API monitoring platform similar to a mini Better Stack / UptimeRobot / Datadog uptime monitor. Built with Java 21, Spring Boot 3, React, PostgreSQL, and Redis.
+
+## Live Demo
+
+| Service | URL |
+|---------|-----|
+| Frontend | https://pulseops-frontend.onrender.com |
+| Backend API | https://pulseops-backend-mee4.onrender.com |
+| Health Probe | https://pulseops-backend-mee4.onrender.com/actuator/health |
+| Swagger UI | https://pulseops-backend-mee4.onrender.com/swagger-ui.html |
+| OpenAPI JSON | https://pulseops-backend-mee4.onrender.com/api-docs |
+
+Demo credentials:
+
+```text
+Email:    demo@pulseops.dev
+Password: demo123
+```
+
+Production smoke check:
+
+```bash
+./scripts/smoke-live.sh
+```
 
 ---
 
@@ -164,42 +189,42 @@ Set `BACKEND_URL`, `FRONTEND_URL`, or `BASE_URL` to target non-local environment
 
 ## Free Hosted Deployment
 
-Recommended hobby setup:
+This repo is deployed on Render using the Blueprint in `render.yaml`.
 
-- Frontend: Vercel Hobby, root directory `frontend`
-- Backend: Render free web service from `render.yaml`
-- Postgres: Render free Postgres from `render.yaml`
-- Redis: Render free Key Value from `render.yaml`
+| Render resource | Purpose |
+|-----------------|---------|
+| `pulseops-frontend` | Static React/Vite app |
+| `pulseops-backend` | Spring Boot API and worker |
+| `pulseops-postgres` | PostgreSQL database |
+| `pulseops-redis` | Redis cache and stream queue |
 
-### Render backend
+The Blueprint wires the frontend to the backend with:
 
-Use the Blueprint flow in Render and select this repository. The `render.yaml` file deploys `pulseops-backend`, creates a free Render Postgres database, creates a free Render Key Value instance, and wires `DATABASE_URL`, `REDIS_URL`, and `JWT_SECRET` automatically.
+```text
+VITE_API_BASE_URL=https://pulseops-backend-mee4.onrender.com/api/v1
+```
 
-After deploy, verify:
+It also provisions `DATABASE_URL`, `REDIS_URL`, and `JWT_SECRET` for the backend.
+
+### Deploy on Render
+
+1. Open Render and create a new Blueprint.
+2. Select this repository.
+3. Confirm the services from `render.yaml`.
+4. Deploy the Blueprint.
+5. Wait for `pulseops-backend` and `pulseops-frontend` to show `Live`.
+
+After deploy, verify the backend:
 
 ```bash
-curl https://your-render-backend.onrender.com/actuator/health
+curl https://pulseops-backend-mee4.onrender.com/actuator/health
 ```
 
-### Vercel frontend
+Verify the full deployed stack:
 
-In Vercel, set:
-
-```text
-Framework Preset: Vite
-Root Directory: frontend
-Build Command: npm run build
-Output Directory: dist
-Install Command: npm ci
+```bash
+./scripts/smoke-live.sh
 ```
-
-Add this Vercel environment variable after the Render backend is live:
-
-```text
-VITE_API_BASE_URL=https://your-render-backend.onrender.com/api/v1
-```
-
-Redeploy the Vercel project after adding the environment variable.
 
 ---
 
@@ -294,15 +319,13 @@ curl -X POST http://localhost:8080/api/v1/events \
 
 ---
 
-## Screenshots
+## Portfolio Proof
 
-> _Add screenshots here after running the app_
-
-- Landing page
-- Dashboard with latency chart
-- Monitor list with status badges
-- Incident timeline
-- Public status page
+- Live full-stack deployment on Render with frontend, backend, PostgreSQL, and Redis.
+- Public health, Swagger, and OpenAPI endpoints for quick reviewer validation.
+- Demo login seeded automatically through `DataSeeder`.
+- CI validates backend tests, frontend production build, Docker image builds, Helm chart rendering, and Terraform formatting/validation.
+- Operational smoke scripts cover both local Docker Compose and the live Render deployment.
 
 ---
 

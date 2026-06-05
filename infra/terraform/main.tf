@@ -5,11 +5,11 @@ resource "kubernetes_namespace" "pulseops" {
 }
 
 resource "helm_release" "pulseops" {
-  name       = "pulseops"
-  namespace  = kubernetes_namespace.pulseops.metadata[0].name
-  chart      = "${path.module}/../../charts/pulseops"
-  wait       = true
-  timeout    = 600
+  name      = "pulseops"
+  namespace = kubernetes_namespace.pulseops.metadata[0].name
+  chart     = "${path.module}/../../charts/pulseops"
+  wait      = true
+  timeout   = 600
 
   set {
     name  = "backend.image.repository"

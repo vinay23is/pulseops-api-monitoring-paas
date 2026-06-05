@@ -6,11 +6,13 @@ import dev.pulseops.service.CheckResultService;
 import dev.pulseops.service.IncidentService;
 import dev.pulseops.service.MonitorService;
 import dev.pulseops.service.MonitoringMetricsService;
-import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.connection.stream.*;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
@@ -20,8 +22,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @ConditionalOnProperty(name = "pulseops.monitor.worker-enabled", havingValue = "true", matchIfMissing = true)
@@ -47,11 +51,19 @@ public class MonitorWorker {
     private String consumerName;
 
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
-    @PostConstruct
+    @EventListener(ApplicationReadyEvent.class)
     public void start() {
+        running.set(true);
         ensureStreamAndGroup();
         executor.submit(this::runLoop);
+    }
+
+    @PreDestroy
+    public void stop() {
+        running.set(false);
+        executor.shutdownNow();
     }
 
     private void ensureStreamAndGroup() {
@@ -64,7 +76,7 @@ public class MonitorWorker {
 
     private void runLoop() {
         log.info("MonitorWorker started, consuming from stream: {}", streamName);
-        while (!Thread.currentThread().isInterrupted()) {
+        while (running.get() && !Thread.currentThread().isInterrupted()) {
             try {
                 List<MapRecord<String, Object, Object>> messages = redisTemplate.opsForStream().read(
                         Consumer.from(groupName, consumerName),
@@ -81,7 +93,10 @@ public class MonitorWorker {
                     }
                 }
             } catch (Exception e) {
-                log.debug("Worker loop error (may be normal on startup): {}", e.getMessage());
+                if (!running.get()) {
+                    break;
+                }
+                log.debug("Worker loop error: {}", e.getMessage());
                 try { Thread.sleep(2000); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); break; }
             }
         }
@@ -113,7 +128,7 @@ public class MonitorWorker {
 
             if (response != null) {
                 statusCode = response.getStatusCode().value();
-                success = statusCode == monitor.getExpectedStatusCode();
+                success = Objects.equals(statusCode, monitor.getExpectedStatusCode());
                 if (!success) {
                     errorMessage = "Expected " + monitor.getExpectedStatusCode() + " but got " + statusCode;
                 }
@@ -130,8 +145,9 @@ public class MonitorWorker {
         monitorService.updateLastCheckedAt(monitorId);
 
         if (!success) {
+            boolean wasDown = incidentService.hasOpenIncident(monitorId);
             incidentService.openOrUpdate(monitor, errorMessage != null ? errorMessage : "Check failed");
-            if (!incidentService.hasOpenIncident(monitorId)) {
+            if (!wasDown) {
                 alertService.fireAlerts(monitor, "Monitor " + monitor.getName() + " is DOWN: " + errorMessage);
             }
         } else {

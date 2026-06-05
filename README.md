@@ -117,7 +117,7 @@ Production smoke check:
 ### Start everything with Docker Compose
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/pulseops-api-monitoring-paas.git
+git clone https://github.com/vinay23is/pulseops-api-monitoring-paas.git
 cd pulseops-api-monitoring-paas
 
 docker compose up --build

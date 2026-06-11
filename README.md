@@ -400,7 +400,15 @@ A standalone, zero-dependency daily exercise tracker built into this repository 
 | 4 | Side Bend Stretch | Raise one arm overhead, lean to the opposite side, 5 each side |
 | 5 | Calf Raises | Rise onto toes with chair support, hold 2 seconds, 15 times |
 
-### How to open it
+### Live deployment
+
+The exercise tracker is deployed as a static site on Vercel:
+
+**https://pulseops-api-monitoring-paas-alpha.vercel.app**
+
+Open it on any phone or tablet — no install required.
+
+### How to open it locally
 
 **Option A — direct file (no server needed):**
 
